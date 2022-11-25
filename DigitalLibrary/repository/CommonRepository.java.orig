@@ -1,0 +1,47 @@
+package com.finalProject.DigitalLibrary.repository;
+
+import com.finalProject.DigitalLibrary.model.ReaderView;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Repository
+public class CommonRepository {
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
+    public CommonRepository(NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
+        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
+    }
+
+    public List<ReaderView> getAllAuthorsWithTheirBooks() {
+
+        String sql = "                                  " +
+                "select users5.userName, books5.title   " +
+                "from users5                            " +
+                "inner join books5                      " +
+                "on users5.userId=books5.userId         ";
+        try {
+            return namedParameterJdbcTemplate.query(sql, (rs, rowNum) -> {
+                ReaderView readerView = new ReaderView();
+                readerView.setAuthor(rs.getString("userName"));
+                readerView.setTitle(rs.getString("title"));
+                return readerView;
+            });
+        } catch (EmptyResultDataAccessException ex) {
+            return new ArrayList<ReaderView>();
+        }
+    }
+
+    public void createNewAccount(String userName, String userPassword) {
+        String sql = "insert into users5 (userName,userPassword) values (:userName,:userPassword)";
+        MapSqlParameterSource mapSqlParameterSource = new MapSqlParameterSource()
+                .addValue("userName", userName)
+                .addValue("userPassword", userPassword);
+        namedParameterJdbcTemplate.update(sql, mapSqlParameterSource);
+    }
+
+}
